@@ -11,6 +11,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/projects")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
@@ -20,15 +21,27 @@ public class ProjectController {
         return projectService.getAllProjects();
     }
 
+    @GetMapping("/projectByAdmin/{userId}")
+    public List<ProjectModel> getProjectsWithUserId(@PathVariable Long userId){
+        return projectService.getProjectsByUserId(userId);
+    }
 
     @PostMapping
-    public ProjectModel createProject(@RequestBody ProjectModel project) {
-        return projectService.createProject(project);
+    public ProjectModel createProject(@RequestBody ProjectWithMembers projectWithMembers) {
+        ProjectModel project = projectWithMembers.getProject();
+        List<Long> memberIds = projectWithMembers.getMemberIds();
+
+        System.out.println("Incoming project: " + projectWithMembers.getProject());
+        System.out.println("CreatedBy: " + projectWithMembers.getProject().getCreatedBy());
+        System.out.println("Member IDs: " + projectWithMembers.getMemberIds());
+
+
+        return projectService.createProject(project, memberIds);
     }
 
     @PutMapping("/{id}")
-    public ProjectModel updateProject(@PathVariable Long id, @RequestBody ProjectModel project) {
-        return projectService.updateProject(id, project);
+    public ProjectModel updateProject(@PathVariable Long id, @RequestBody ProjectModel project,  @RequestBody List<Long> memberIds) {
+        return projectService.updateProject(id, project, memberIds);
     }
 
     @DeleteMapping("/{id}")
@@ -36,19 +49,6 @@ public class ProjectController {
         projectService.deleteProject(id);
     }
 
-    @PostMapping("/{projectId}/add-members")
-    public ResponseEntity<String> addMembersToProject(@PathVariable Long projectId, @RequestBody List<Long> memberIds) {
-        try {
-            projectService.addMembersToProject(projectId, memberIds);
-            return ResponseEntity.ok("Members added successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding members: " + e.getMessage());
-        }
-    }
 
-    @GetMapping("/{projectId}")
-    public ProjectModel getProjectDetails(@PathVariable Long projectId) {
-        return projectService.getProjectDetails(projectId);
-    }
 
 }

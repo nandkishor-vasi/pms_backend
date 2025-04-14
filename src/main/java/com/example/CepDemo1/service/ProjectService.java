@@ -23,7 +23,19 @@ public class ProjectService {
 
     // Get all projects
     public List<ProjectModel> getAllProjects() {
-        return projectRepo.findAll();
+        List<ProjectModel> projects = projectRepo.findAll();
+        for (ProjectModel project : projects) {
+            Long projectId = project.getId();
+
+            // Set the creator (admin)
+            UserModel admin = projectRepo.getAdminForProject(projectId);
+            project.setCreatedBy(admin);
+
+            // Set the members
+            Set<UserModel> members = projectRepo.getMembersForProject(projectId);
+            project.setMembers(members);
+        }
+        return projects;
     }
 
     // Get project by ID
@@ -32,14 +44,14 @@ public class ProjectService {
     }
 
     // Create a new project
-    public ProjectModel createProject(ProjectModel project) {
+    public ProjectModel createProject(ProjectModel project, List<Long> memberIds) {
         project.setCreatedAt(new Date());
         project.setUpdatedAt(new Date());
-        return projectRepo.save(project);
+        return projectRepo.save(project, memberIds);
     }
 
 
-    public ProjectModel updateProject(Long id, ProjectModel updatedProject) {
+    public ProjectModel updateProject(Long id, ProjectModel updatedProject, List<Long> memberIds) {
         ProjectModel existingProject = getProjectById(id);
 
         existingProject.setTitle(updatedProject.getTitle());
@@ -49,7 +61,7 @@ public class ProjectService {
         existingProject.setEndDate(updatedProject.getEndDate());
         existingProject.setUpdatedAt(new Date());
 
-        return projectRepo.save(existingProject);
+        return projectRepo.save(existingProject, memberIds);
     }
 
     // Delete a project
@@ -58,21 +70,18 @@ public class ProjectService {
         projectRepo.delete(project);
     }
 
-    public void addMembersToProject(Long projectId, List<Long> memberIds) {
-        projectRepo.addMembersToProject(projectId, memberIds);
+    public List<ProjectModel> getProjectsByUserId(Long userId) {
+        List<ProjectModel> projects = projectRepo.findByUserId(userId);
+        for (ProjectModel project : projects) {
+            Long projectId = project.getId();
 
-        Set<UserModel> members = projectRepo.getMembersForProject(projectId);
-        ProjectModel project = projectRepo.findById(projectId);
-        project.setMembers(members);
-    }
+            UserModel admin = projectRepo.getAdminForProject(projectId);
+            project.setCreatedBy(admin);
 
-    public ProjectModel getProjectDetails(Long projectId) {
-        ProjectModel project = projectRepo.findById(projectId);
-        Set<UserModel> members = projectRepo.getMembersForProject(projectId);
-        UserModel user = projectRepo.getAdminForProject(projectId);
-        project.setCreatedBy(user);
-        project.setMembers(members);
-        return project;
+            Set<UserModel> members = projectRepo.getMembersForProject(projectId);
+            project.setMembers(members);
+        }
+        return projects;
     }
 
 }

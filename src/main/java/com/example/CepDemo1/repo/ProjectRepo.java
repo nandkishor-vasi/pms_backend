@@ -11,10 +11,7 @@
     import org.springframework.jdbc.support.KeyHolder;
     import org.springframework.stereotype.Repository;
 
-    import java.sql.PreparedStatement;
-    import java.sql.SQLException;
-    import java.sql.Statement;
-    import java.sql.Timestamp;
+    import java.sql.*;
     import java.util.*;
 
     @Repository
@@ -52,14 +49,14 @@
             return jdbcTemplate.queryForObject(sql, new Object[]{id}, projectRowMapper);
         }
 
-        public ProjectModel save(ProjectModel project) {
-            String sql = "INSERT INTO projects (title, description, status, created_at, updated_at, start_date, end_date, created_by) " +
+        public ProjectModel save(ProjectModel project, List<Long> memberIds) {
+            String projectSql = "INSERT INTO projects (title, description, status, created_at, updated_at, start_date, end_date, created_by) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             KeyHolder keyHolder = new GeneratedKeyHolder();
 
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(projectSql, Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1, project.getTitle());
                 ps.setString(2, project.getDescription());
                 ps.setString(3, project.getStatus().name());
@@ -71,26 +68,16 @@
                 return ps;
             }, keyHolder);
 
-
             Map<String, Object> keys = keyHolder.getKeys();
             Long generatedId = ((Number) Objects.requireNonNull(keys).get("id")).longValue();
             project.setId(generatedId);
 
-            return project;
-        }
+            String memberSql = "INSERT INTO project_members (project_id, user_id) VALUES (?, ?)";
 
-        public void delete(ProjectModel project) {
-            String sql = "DELETE FROM projects WHERE id = ?";
-            jdbcTemplate.update(sql, project.getId());
-        }
-
-        public void addMembersToProject(Long projectId, List<Long> memberIds) {
-            String sql = "INSERT INTO project_members (project_id, user_id) VALUES (?, ?)";
-
-            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            jdbcTemplate.batchUpdate(memberSql, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    ps.setLong(1, projectId);
+                    ps.setLong(1, generatedId);
                     ps.setLong(2, memberIds.get(i));
                 }
 
@@ -99,6 +86,13 @@
                     return memberIds.size();
                 }
             });
+
+            return project;
+        }
+
+        public void delete(ProjectModel project) {
+            String sql = "DELETE FROM projects WHERE id = ?";
+            jdbcTemplate.update(sql, project.getId());
         }
 
         public Set<UserModel> getMembersForProject(Long projectId) {
@@ -130,6 +124,32 @@
             user.setRole(Role.valueOf(rs.getString("role")));
             return user;
         };
+
+        public List<ProjectModel> findByUserId(Long userId) {
+            String sql = "SELECT * FROM projects WHERE created_by = ?";
+
+            List<ProjectModel> projects = jdbcTemplate.query(sql, new Object[]{userId}, new RowMapper<ProjectModel>() {
+                @Override
+                public ProjectModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ProjectModel project = new ProjectModel();
+                    project.setId(rs.getLong("id"));
+                    project.setTitle(rs.getString("title"));
+                    project.setDescription(rs.getString("description"));
+                    project.setStatus(ProjectModel.Status.valueOf(rs.getString("status")));
+                    project.setStartDate(rs.getDate("start_date"));
+                    project.setEndDate(rs.getDate("end_date"));
+                    return project;
+                }
+            });
+
+            if (projects.isEmpty()) {
+                // Log the issue or handle accordingly
+                System.out.println("No projects found for user ID: " + userId);
+            }
+
+            return projects;
+        }
+
 
 
     }

@@ -1,6 +1,10 @@
 package com.example.CepDemo1.repo;
 
 import com.example.CepDemo1.model.AdminModel;
+import com.example.CepDemo1.model.MemberModel;
+import com.example.CepDemo1.model.Role;
+import com.example.CepDemo1.model.UserModel;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +18,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Repository
 public class AdminRepo {
@@ -88,5 +93,33 @@ public class AdminRepo {
             return admin;
         };
     }
+
+    public Set<UserModel> findAllMembers() {
+        String sql = "SELECT u.id, u.name, u.email, u.role, m.profile_picture, m.address, m.is_active, m.created_at, m.user_id " +
+                "FROM users u JOIN members m ON u.id = m.user_id WHERE u.role = 'MEMBER'"; // Assuming there's a "members" table and a "users" table
+        return Set.copyOf(jdbcTemplate.query(sql, userRowMapper()));
+    }
+
+    private RowMapper<UserModel> userRowMapper() {
+        return (rs, rowNum) -> {
+            UserModel user = new UserModel();
+
+            user.setId(rs.getLong("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setRole(Role.valueOf(rs.getString("role")));
+
+            MemberModel member = new MemberModel();
+            member.setProfilePicture(rs.getString("profile_picture"));
+            member.setAddress(rs.getString("address"));
+            member.setActive(rs.getBoolean("is_active"));
+            member.setCreatedAt(rs.getTimestamp("created_at"));
+
+            user.setMember(member);
+
+            return user;
+        };
+    }
+
 
 }
