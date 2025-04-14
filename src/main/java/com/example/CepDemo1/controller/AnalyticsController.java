@@ -20,10 +20,10 @@ public class AnalyticsController {
         return analyticsService.countActivitiesPerProject();
     }
 
-    @GetMapping("/projects/activities-more-than-five")
-    public List<Map<String, Object>> getProjectsHavingMoreThanFiveActivities() {
-        return analyticsService.getProjectsHavingMoreThanFiveActivities();
-    }
+//    @GetMapping("/projects/activities-more-than-five")
+//    public List<Map<String, Object>> getProjectsHavingMoreThanFiveActivities() {
+//        return analyticsService.getProjectsHavingMoreThanFiveActivities();
+//    }
 
     @GetMapping("/activities/count-by-handler")
     public List<Map<String, Object>> getActivityCountByHandler() {
