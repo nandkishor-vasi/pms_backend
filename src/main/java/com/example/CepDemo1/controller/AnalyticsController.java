@@ -21,7 +21,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/projects/{projectId}/timeline")
-    public List<Map<String, Object>> getActivityTimelineForProject(@PathVariable Long projectId) {
-        return analyticsService.getActivityTimelineForProject(projectId);
+    public Map<String, Object> getProjectTimeline(@PathVariable Long projectId) {
+        return analyticsService.getProjectTimeline(projectId);
     }
 }

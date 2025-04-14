@@ -103,6 +103,8 @@
             return new HashSet<>(jdbcTemplate.query(sql, new Object[]{projectId}, userRowMapper));
         }
 
+
+
         public UserModel getAdminForProject(Long projectId) {
             String sql = "SELECT u.* FROM projects p " +
                     "JOIN users u ON p.created_by = u.id " +

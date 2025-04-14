@@ -17,7 +17,7 @@ public class AnalyticsService {
         return analyticsRepo.countActivitiesPerProject(projectId);
     }
 
-    public List<Map<String, Object>> getActivityTimelineForProject(Long projectId) {
-        return analyticsRepo.getActivityTimelineForProject(projectId);
+    public Map<String, Object> getProjectTimeline(Long projectId) {
+        return analyticsRepo.getProjectTimeline(projectId);
     }
 }

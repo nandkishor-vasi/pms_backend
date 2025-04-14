@@ -2,6 +2,7 @@ package com.example.CepDemo1.service;
 
 import com.example.CepDemo1.model.ProjectModel;
 import com.example.CepDemo1.model.UserModel;
+import com.example.CepDemo1.repo.AnalyticsRepo;
 import com.example.CepDemo1.repo.ProjectRepo;
 import com.example.CepDemo1.repo.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +18,9 @@ public class ProjectService {
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private AnalyticsRepo analyticsRepo;
 
     // Get project by ID
     public ProjectModel getProjectById(Long id) {
@@ -41,6 +45,9 @@ public class ProjectService {
         return assignedMembersList;
     }
 
+    public Map<String, Object> getProjectTimeline(Long projectId) {
+        return analyticsRepo.getProjectTimeline(projectId);
+    }
 
     public ProjectModel updateProject(Long id, ProjectModel updatedProject, List<Long> memberIds) {
         ProjectModel existingProject = getProjectById(id);

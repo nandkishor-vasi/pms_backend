@@ -22,10 +22,20 @@ public class AnalyticsRepo  {
         return jdbcTemplate.queryForList(sql, projectId, projectId);
     }
 
-    public List<Map<String, Object>> getActivityTimelineForProject(Long projectId) {
-        String sql = "SELECT a.id, a.action, a.timestamp, u.username AS handled_by " +
-                "FROM activities a JOIN users u ON a.handled_by = u.id " +
-                "WHERE a.project_id = ? ORDER BY a.timestamp ASC";
-        return jdbcTemplate.queryForList(sql, projectId);
+    public Map<String, Object> getProjectTimeline(Long projectId) {
+        String sql = """
+            SELECT
+                title,
+                start_date,
+                end_date,
+                created_at,
+                status,
+                (end_date - start_date) AS duration_days
+            FROM projects
+            WHERE id = ?;
+            """;
+
+        return jdbcTemplate.queryForMap(sql, projectId);
     }
+
 }
