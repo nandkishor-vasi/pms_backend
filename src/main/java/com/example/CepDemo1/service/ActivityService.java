@@ -1,7 +1,10 @@
 package com.example.CepDemo1.service;
 
 import com.example.CepDemo1.model.ActivityModel;
+import com.example.CepDemo1.model.ProjectModel;
+import com.example.CepDemo1.model.UserModel;
 import com.example.CepDemo1.repo.ActivityRepo;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +15,20 @@ public class ActivityService {
     @Autowired
     private ActivityRepo activityRepo;
 
-    // Get all activity logs
     public List<ActivityModel> getAllActivities() {
         return activityRepo.findAll();
     }
 
-    // Get a single activity by ID
     public ActivityModel getActivityById(Long id) {
-        return activityRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Activity not found with ID: " + id));
+        ActivityModel activity = activityRepo.findById(id);
+        UserModel admin = activityRepo.getAdminForActivity(id);
+        UserModel member = activityRepo.getMemberForActivity(id);
+        ProjectModel project = activityRepo.getProjectDetailsForActivity(id);
+
+        activity.setCreatedBy(admin);
+        activity.setHandledBy(member);
+        activity.setProject(project);
+        return activity;
     }
 
     // Create a new activity
@@ -29,7 +37,6 @@ public class ActivityService {
         return activityRepo.save(activity);
     }
 
-    // Update an activity by ID
     public ActivityModel updateActivity(Long id, ActivityModel updatedActivity) {
         ActivityModel existing = getActivityById(id);
 
@@ -41,7 +48,6 @@ public class ActivityService {
         return activityRepo.save(existing);
     }
 
-    // Delete activity by ID
     public void deleteActivity(Long id) {
         if (!activityRepo.existsById(id)) {
             throw new RuntimeException("Activity not found with ID: " + id);

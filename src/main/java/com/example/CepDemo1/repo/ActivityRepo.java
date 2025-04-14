@@ -4,9 +4,15 @@ import com.example.CepDemo1.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -18,7 +24,7 @@ public class ActivityRepo {
         ActivityModel activity = new ActivityModel();
 
         activity.setId(rs.getLong("id"));
-        activity.setAction(Status.valueOf(rs.getString("action")));
+        activity.setAction(Action.valueOf(rs.getString("action")));
         activity.setDetail(rs.getString("detail"));
         activity.setTimestamp(rs.getTimestamp("timestamp"));
 
@@ -45,41 +51,44 @@ public class ActivityRepo {
         return jdbcTemplate.query(sql, activityRowMapper);
     }
 
-    public Optional<ActivityModel> findById(Long id) {
+    public ActivityModel findById(Long id) {
         String sql = "SELECT * FROM activities WHERE id = ?";
-        List<ActivityModel> result = jdbcTemplate.query(sql, activityRowMapper, id);
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+        return jdbcTemplate.queryForObject(sql, activityRowMapper, id);
     }
+
 
     public ActivityModel save(ActivityModel activity) {
         if (activity.getId() == null) {
-            // INSERT new activity
+            // INSERT new activity using KeyHolder
             String insertSql = "INSERT INTO activities (action, detail, timestamp, created_by, handled_by, project_id) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
 
-            jdbcTemplate.update(insertSql,
-                    activity.getAction(),
-                    activity.getDetail(),
-                    activity.getTimestamp(),
-                    activity.getCreatedBy().getId(),
-                    activity.getHandledBy().getId(),
-                    activity.getProject().getId()
-            );
+            KeyHolder keyHolder = new GeneratedKeyHolder();
 
-            // Get auto-generated ID
-            Long id = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
-            activity.setId(id);
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, activity.getAction().toString());
+                ps.setString(2, activity.getDetail());
+                ps.setTimestamp(3, new java.sql.Timestamp(activity.getTimestamp().getTime()));
+                ps.setLong(4, activity.getCreatedBy().getId());
+                ps.setLong(5, activity.getHandledBy().getId());
+                ps.setLong(6, activity.getProject().getId());
+                return ps;
+            }, keyHolder);
 
-            // Update project status to IN_PROGRESS by default after creating an activity
+            Map<String, Object> keys = keyHolder.getKeys();
+            Long generatedId = ((Number) Objects.requireNonNull(keys).get("id")).longValue();
+            activity.setId(generatedId);
+
             updateProjectStatus(activity.getProject().getId(), "IN_PROGRESS");
 
         } else {
-            // UPDATE existing activity
+            // UPDATE logic remains the same
             String updateSql = "UPDATE activities SET action = ?, detail = ?, timestamp = ?, created_by = ?, " +
                     "handled_by = ?, project_id = ? WHERE id = ?";
 
             jdbcTemplate.update(updateSql,
-                    activity.getAction(),
+                    activity.getAction().toString(),
                     activity.getDetail(),
                     activity.getTimestamp(),
                     activity.getCreatedBy().getId(),
@@ -114,5 +123,48 @@ public class ActivityRepo {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
+
+    public UserModel getAdminForActivity(Long activityId) {
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN activities a ON u.id = a.created_by WHERE a.id = ?";
+        return jdbcTemplate.queryForObject(sql, userRowMapper, activityId);
+    }
+
+    public UserModel getMemberForActivity(Long activityId) {
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN activities a ON u.id = a.handled_by WHERE a.id = ?";
+        return jdbcTemplate.queryForObject(sql, userRowMapper, activityId);
+    }
+
+    public ProjectModel getProjectDetailsForActivity(Long activityId) {
+        String sql = "SELECT p.* FROM projects p " +
+                "JOIN activities a ON p.id = a.project_id WHERE a.id = ?";
+        return jdbcTemplate.queryForObject(sql, projectRowMapper, activityId);
+    }
+
+    private final RowMapper<UserModel> userRowMapper = (rs, rowNum) -> {
+        UserModel user = new UserModel();
+        user.setId(rs.getLong("id"));
+        user.setName(rs.getString("name"));
+        user.setEmail(rs.getString("email"));
+        user.setUsername(rs.getString("username"));
+        user.setPhoneNumber(rs.getString("phone_number"));
+        user.setAddress(rs.getString("address"));
+        user.setRole(Role.valueOf(rs.getString("role")));
+        return user;
+    };
+
+    private final RowMapper<ProjectModel> projectRowMapper = (rs, rowNum) -> {
+        ProjectModel project = new ProjectModel();
+        project.setId(rs.getLong("id"));
+        project.setTitle(rs.getString("title"));
+        project.setDescription(rs.getString("description"));
+        project.setStatus(ProjectModel.Status.valueOf(rs.getString("status")));
+        project.setCreatedAt(rs.getTimestamp("created_at"));
+        project.setUpdatedAt(rs.getTimestamp("updated_at"));
+        project.setStartDate(rs.getDate("start_date"));
+        project.setEndDate(rs.getDate("end_date"));
+        return project;
+    };
 
 }

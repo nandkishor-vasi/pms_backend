@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS project_members (
 -- Activities Table
 CREATE TABLE IF NOT EXISTS activities (
     id BIGSERIAL PRIMARY KEY,
-    action VARCHAR(255) CHECK (status IN ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED')),
+    action VARCHAR(255) CHECK (action IN ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED')),
     detail TEXT,
     timestamp TIMESTAMP,
 

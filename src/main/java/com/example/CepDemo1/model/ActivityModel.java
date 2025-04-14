@@ -15,14 +15,11 @@ public class ActivityModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public void setAction(Status action) {
-    }
 
 
-    public enum Action{
-        NOT_STARTED,IN_PROGRESS, COMPLETED
-    }
+    @Enumerated(EnumType.STRING)
     private Action action;
+
     private String detail;
 
     @Temporal(TemporalType.TIMESTAMP)
