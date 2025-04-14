@@ -1,5 +1,3 @@
-
-
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -39,4 +37,44 @@ CREATE TABLE IF NOT EXISTS admin (
     status VARCHAR(50) NOT NULL CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
 
     CONSTRAINT fk_admin_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Projects Table
+CREATE TABLE IF NOT EXISTS projects (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    description VARCHAR(1000),
+    status VARCHAR(20),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    start_date DATE,
+    end_date DATE,
+    created_by BIGINT,
+    CONSTRAINT fk_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    CHECK (status IN ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'))
+);
+
+-- Project Members Table
+CREATE TABLE IF NOT EXISTS project_members (
+    project_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (project_id, user_id),
+    CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Activities Table
+CREATE TABLE IF NOT EXISTS activities (
+    id BIGSERIAL PRIMARY KEY,
+    action VARCHAR(255) CHECK (status IN ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED')),
+    detail TEXT,
+    timestamp TIMESTAMP,
+
+    created_by BIGINT,
+    handled_by BIGINT,
+    project_id BIGINT,
+
+    CONSTRAINT fk_activity_created_by FOREIGN KEY (created_by) REFERENCES users(id),
+    CONSTRAINT fk_activity_handled_by FOREIGN KEY (handled_by) REFERENCES users(id),
+    CONSTRAINT fk_activity_project FOREIGN KEY (project_id) REFERENCES projects(id)
 );
