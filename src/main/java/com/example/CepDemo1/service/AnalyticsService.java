@@ -13,20 +13,8 @@ public class AnalyticsService {
     @Autowired
     private AnalyticsRepo analyticsRepo;
 
-    public List<Map<String, Object>> countActivitiesPerProject() {
-        return analyticsRepo.countActivitiesPerProject();
-    }
-
-    public List<Map<String, Object>> getProjectsHavingMoreThanFiveActivities() {
-        return analyticsRepo.getProjectsHavingMoreThanFiveActivities();
-    }
-
-    public List<Map<String, Object>> getActivityCountByHandler() {
-        return analyticsRepo.getActivityCountByHandler();
-    }
-
-    public List<Map<String, Object>> getLatestActivities(int limit) {
-        return analyticsRepo.getLatestActivities(limit);
+    public List<Map<String, Object>> countActivitiesPerProject(Long projectId) {
+        return analyticsRepo.countActivitiesPerProject(projectId);
     }
 
     public List<Map<String, Object>> getActivityTimelineForProject(Long projectId) {

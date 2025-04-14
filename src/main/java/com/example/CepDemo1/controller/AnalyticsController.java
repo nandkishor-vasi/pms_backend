@@ -15,24 +15,9 @@ public class AnalyticsController {
     @Autowired
     private AnalyticsService analyticsService;
 
-    @GetMapping("/activities/count-per-project")
-    public List<Map<String, Object>> countActivitiesPerProject() {
-        return analyticsService.countActivitiesPerProject();
-    }
-
-//    @GetMapping("/projects/activities-more-than-five")
-//    public List<Map<String, Object>> getProjectsHavingMoreThanFiveActivities() {
-//        return analyticsService.getProjectsHavingMoreThanFiveActivities();
-//    }
-
-    @GetMapping("/activities/count-by-handler")
-    public List<Map<String, Object>> getActivityCountByHandler() {
-        return analyticsService.getActivityCountByHandler();
-    }
-
-    @GetMapping("/activities/latest")
-    public List<Map<String, Object>> getLatestActivities(@RequestParam int limit) {
-        return analyticsService.getLatestActivities(limit);
+    @GetMapping("/activities/{projectId}/count-per-project")
+    public List<Map<String, Object>> countActivitiesPerProject(@PathVariable Long projectId) {
+        return analyticsService.countActivitiesPerProject(projectId);
     }
 
     @GetMapping("/projects/{projectId}/timeline")
