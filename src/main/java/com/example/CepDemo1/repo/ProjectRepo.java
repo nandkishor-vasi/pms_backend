@@ -59,7 +59,7 @@
                 PreparedStatement ps = connection.prepareStatement(projectSql, Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1, project.getTitle());
                 ps.setString(2, project.getDescription());
-                ps.setString(3, project.getStatus().name());
+                ps.setString(3, project.getStatus() != null ? project.getStatus().toString() : null);
                 ps.setTimestamp(4, new Timestamp(project.getCreatedAt().getTime()));
                 ps.setTimestamp(5, new Timestamp(project.getUpdatedAt().getTime()));
                 ps.setDate(6, new java.sql.Date(project.getStartDate().getTime()));

@@ -1,6 +1,7 @@
 package com.example.CepDemo1.controller;
 
 import com.example.CepDemo1.model.ProjectModel;
+import com.example.CepDemo1.model.UserModel;
 import com.example.CepDemo1.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -27,13 +29,13 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ProjectModel createProject(@RequestBody ProjectWithMembers projectWithMembers) {
-        ProjectModel project = projectWithMembers.getProject();
-        List<Long> memberIds = projectWithMembers.getMemberIds();
+    public ProjectModel createProject(@RequestBody ProjectModel project) {
+        project.setCreatedAt(new Date());
+        project.setUpdatedAt(new Date());
 
-        System.out.println("Incoming project: " + projectWithMembers.getProject());
-        System.out.println("CreatedBy: " + projectWithMembers.getProject().getCreatedBy());
-        System.out.println("Member IDs: " + projectWithMembers.getMemberIds());
+        List<Long> memberIds = project.getMembers().stream()
+                .map(UserModel::getId)
+                .collect(Collectors.toList());
 
 
         return projectService.createProject(project, memberIds);
