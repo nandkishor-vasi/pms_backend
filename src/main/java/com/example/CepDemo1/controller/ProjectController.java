@@ -51,6 +51,9 @@ public class ProjectController {
         projectService.deleteProject(id);
     }
 
-
+    @GetMapping("/projectByMember/{userId}")
+    public List<ProjectModel> getProjectByMemberId(@PathVariable Long memberId) {
+        return projectService.getProjectByMemberId(memberId);
+    }
 
 }

@@ -82,4 +82,19 @@ public class ProjectService {
         return projects;
     }
 
+    // Get projects for a member by memberId
+    public List<ProjectModel> getProjectByMemberId(Long memberId) {
+        List<ProjectModel> projects = projectRepo.findByMemberId(memberId);
+        for (ProjectModel project : projects) {
+            Long projectId = project.getId();
+
+            UserModel admin = projectRepo.getAdminForProject(projectId);
+            project.setCreatedBy(admin);
+
+            Set<UserModel> members = projectRepo.getMembersForProject(projectId);
+            project.setMembers(members);
+        }
+        return projects;
+    }
+
 }
