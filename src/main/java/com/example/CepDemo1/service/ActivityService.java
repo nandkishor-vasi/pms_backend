@@ -31,11 +31,15 @@ public class ActivityService {
         return activity;
     }
 
-    // Create a new activity
     public ActivityModel createActivity(ActivityModel activity) {
+        Long createdById = activity.getCreatedBy().getId();
+        Long handledById = activity.getHandledBy().getId();
+        Long projectId = activity.getProject().getId();
 
+        // Save the activity to the repository
         return activityRepo.save(activity);
     }
+
 
     public ActivityModel updateActivity(Long id, ActivityModel updatedActivity) {
         ActivityModel existing = getActivityById(id);
@@ -54,4 +58,10 @@ public class ActivityService {
         }
         activityRepo.deleteById(id);
     }
+
+    public List<ActivityModel> getActivitiesByAdminId(Long adminId) {
+
+        return activityRepo.findByAdminId(adminId);
+    }
+
 }

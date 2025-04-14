@@ -15,14 +15,14 @@ public class ActivityController {
     @Autowired
     private ActivityService activityService;
 
-    @GetMapping
-    public List<ActivityModel> getAllActivities() {
-        return activityService.getAllActivities();
-    }
-
     @GetMapping("/{id}")
     public ActivityModel getActivityById(@PathVariable Long id) {
         return activityService.getActivityById(id);
+    }
+
+    @GetMapping("/admin/{adminId}")
+    public List<ActivityModel> getActivitiesByAdminId(@PathVariable Long adminId) {
+        return activityService.getActivitiesByAdminId(adminId);
     }
 
     @PostMapping
@@ -39,4 +39,6 @@ public class ActivityController {
     public void deleteActivity(@PathVariable Long id) {
         activityService.deleteActivity(id);
     }
+
+
 }

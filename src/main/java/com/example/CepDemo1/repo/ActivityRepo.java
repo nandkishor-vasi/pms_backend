@@ -167,4 +167,9 @@ public class ActivityRepo {
         return project;
     };
 
+    public List<ActivityModel> findByAdminId(Long adminId) {
+        String sql = "SELECT * FROM activities WHERE created_by = ?";
+        return jdbcTemplate.query(sql, activityRowMapper, adminId);
+    }
+
 }

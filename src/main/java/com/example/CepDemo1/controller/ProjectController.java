@@ -18,14 +18,14 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @GetMapping
-    public List<ProjectModel> getAllProjects() {
-        return projectService.getAllProjects();
-    }
-
     @GetMapping("/projectByAdmin/{userId}")
     public List<ProjectModel> getProjectsWithUserId(@PathVariable Long userId){
         return projectService.getProjectsByUserId(userId);
+    }
+
+    @GetMapping("/availableMembers/{projectId}")
+    public List<UserModel> getAvailableMembersForProject(@PathVariable Long projectId) {
+        return projectService.getAssignedMembersForProject(projectId);
     }
 
     @PostMapping

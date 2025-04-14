@@ -8,10 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ProjectService {
@@ -20,23 +17,6 @@ public class ProjectService {
 
     @Autowired
     private UserRepo userRepo;
-
-    // Get all projects
-    public List<ProjectModel> getAllProjects() {
-        List<ProjectModel> projects = projectRepo.findAll();
-        for (ProjectModel project : projects) {
-            Long projectId = project.getId();
-
-            // Set the creator (admin)
-            UserModel admin = projectRepo.getAdminForProject(projectId);
-            project.setCreatedBy(admin);
-
-            // Set the members
-            Set<UserModel> members = projectRepo.getMembersForProject(projectId);
-            project.setMembers(members);
-        }
-        return projects;
-    }
 
     // Get project by ID
     public ProjectModel getProjectById(Long id) {
@@ -48,6 +28,17 @@ public class ProjectService {
         project.setCreatedAt(new Date());
         project.setUpdatedAt(new Date());
         return projectRepo.save(project, memberIds);
+    }
+
+    public List<UserModel> getAssignedMembersForProject(Long projectId) {
+        // Get all users assigned to the project
+        Set<UserModel> assignedMembers = projectRepo.getMembersForProject(projectId);
+
+        // Convert the Set to a List
+        List<UserModel> assignedMembersList = new ArrayList<>(assignedMembers);
+
+        // Return the list of assigned members
+        return assignedMembersList;
     }
 
 

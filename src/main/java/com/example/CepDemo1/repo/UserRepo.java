@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -90,4 +91,24 @@ public class UserRepo {
 
         return jdbcTemplate.query(sql, rowMapper, id).stream().findFirst();
     }
+
+    public List<UserModel> findAll() {
+        String sql = "SELECT * FROM users";
+
+        RowMapper<UserModel> rowMapper = (rs, rowNum) -> {
+            UserModel user = new UserModel();
+            user.setId(rs.getLong("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setUsername(rs.getString("username"));
+            user.setPassword(rs.getString("password"));
+            user.setPhoneNumber(rs.getString("phone_number"));
+            user.setAddress(rs.getString("address"));
+            user.setRole(Role.valueOf(rs.getString("role")));
+            return user;
+        };
+
+        return jdbcTemplate.query(sql, rowMapper);
+    }
+
 }
