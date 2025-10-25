@@ -23,6 +23,11 @@ public class ProjectController {
         return projectService.getProjectsByUserId(userId);
     }
 
+    @GetMapping("/projectByMember/{userId}")
+    public List<ProjectModel> getProjectsWithMemberId(@PathVariable Long userId){
+        return projectService.getProjectsByMemberId(userId);
+    }
+
     @GetMapping("/availableMembers/{projectId}")
     public List<UserModel> getAvailableMembersForProject(@PathVariable Long projectId) {
         return projectService.getAssignedMembersForProject(projectId);
@@ -42,15 +47,13 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ProjectModel updateProject(@PathVariable Long id, @RequestBody ProjectModel project,  @RequestBody List<Long> memberIds) {
-        return projectService.updateProject(id, project, memberIds);
+    public ProjectModel updateProject(@PathVariable Long id, @RequestBody ProjectModel project) {
+        return projectService.updateProject(id, project);
     }
 
     @DeleteMapping("/{id}")
     public void deleteProject(@PathVariable Long id) {
         projectService.deleteProject(id);
     }
-
-
 
 }

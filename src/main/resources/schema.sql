@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS activities (
     id BIGSERIAL PRIMARY KEY,
     action VARCHAR(255) CHECK (action IN ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED')),
     detail TEXT,
+    comment TEXT,
     timestamp TIMESTAMP,
 
     created_by BIGINT,

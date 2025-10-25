@@ -1,6 +1,8 @@
 package com.example.CepDemo1.repo;
 
 import com.example.CepDemo1.model.*;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,6 +21,9 @@ import java.util.Optional;
 public class ActivityRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Enumerated(EnumType.STRING)
+    private Action action;
 
     private final RowMapper<ActivityModel> activityRowMapper = (rs, rowNum) -> {
         ActivityModel activity = new ActivityModel();
@@ -172,4 +177,64 @@ public class ActivityRepo {
         return jdbcTemplate.query(sql, activityRowMapper, adminId);
     }
 
+    public List<ActivityModel> findActivitiesForMember(Long memberId) {
+        String sql = """
+        SELECT 
+            a.id AS activity_id,
+            a.action,
+            a.detail,
+            a.timestamp,
+            a.created_by,
+            a.handled_by,
+            p.id AS project_id,
+            p.title AS project_title,
+            p.description AS project_description,
+            p.status AS project_status,
+            p.start_date,
+            p.end_date,
+            p.created_at,
+            p.updated_at
+        FROM activities a
+        JOIN projects p ON a.project_id = p.id
+        WHERE a.handled_by = ?
+        ORDER BY a.timestamp DESC
+        """;
+
+        return jdbcTemplate.query(sql, new Object[]{memberId}, (rs, rowNum) -> {
+            ActivityModel activity = new ActivityModel();
+            activity.setId(rs.getLong("activity_id"));
+            activity.setAction(Action.valueOf(rs.getString("action")));
+            activity.setDetail(rs.getString("detail"));
+            activity.setTimestamp(rs.getTimestamp("timestamp"));
+
+            // Minimal createdBy reference
+            UserModel createdBy = new UserModel();
+            createdBy.setId(rs.getLong("created_by"));
+            activity.setCreatedBy(createdBy);
+
+            // Member (handled_by)
+            UserModel handledBy = new UserModel();
+            handledBy.setId(rs.getLong("handled_by"));
+            activity.setHandledBy(handledBy);
+
+            // Project details
+            ProjectModel project = new ProjectModel();
+            project.setId(rs.getLong("project_id"));
+            project.setTitle(rs.getString("project_title"));
+            project.setDescription(rs.getString("project_description"));
+            project.setStatus(ProjectModel.Status.valueOf(rs.getString("project_status")));
+            project.setStartDate(rs.getDate("start_date"));
+            project.setEndDate(rs.getDate("end_date"));
+            project.setCreatedAt(rs.getTimestamp("created_at"));
+            project.setUpdatedAt(rs.getTimestamp("updated_at"));
+            activity.setProject(project);
+
+            return activity;
+        });
+    }
+
+    public List<ActivityModel> findByProjectId(Long projectId) {
+        String sql = "SELECT * FROM activities WHERE project_id = ?";
+        return jdbcTemplate.query(sql, activityRowMapper, projectId);
+    }
 }

@@ -49,17 +49,15 @@ public class ProjectService {
         return analyticsRepo.getProjectTimeline(projectId);
     }
 
-    public ProjectModel updateProject(Long id, ProjectModel updatedProject, List<Long> memberIds) {
+    public ProjectModel updateProject(Long id, ProjectModel updatedProject) {
         ProjectModel existingProject = getProjectById(id);
 
         existingProject.setTitle(updatedProject.getTitle());
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setStatus(updatedProject.getStatus());
-        existingProject.setStartDate(updatedProject.getStartDate());
-        existingProject.setEndDate(updatedProject.getEndDate());
         existingProject.setUpdatedAt(new Date());
 
-        return projectRepo.save(existingProject, memberIds);
+        return projectRepo.update(existingProject);
     }
 
     // Delete a project
@@ -80,6 +78,14 @@ public class ProjectService {
             project.setMembers(members);
         }
         return projects;
+    }
+
+    public List<ProjectModel> getProjectsByMemberId(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        List<ProjectModel> projects = projectRepo.findByMemberId(userId);
+        return projects == null ? Collections.emptyList() : projects;
     }
 
 }

@@ -49,6 +49,8 @@ public class UserController {
             response.put("role", loggedInUser.getRole());
             response.put("token", token);
             response.put("id", loggedInUser.getId());
+            response.put("email", loggedInUser.getEmail());
+
             return  response;
 
         } else {

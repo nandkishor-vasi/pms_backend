@@ -152,6 +152,34 @@
             return projects;
         }
 
+        public List<ProjectModel> findByMemberId(Long userId) {
+            String sql = "SELECT p.* FROM projects p " +
+                    "JOIN project_members pm ON p.id = pm.project_id " +
+                    "WHERE pm.user_id = ?";
+
+            List<ProjectModel> projects = jdbcTemplate.query(sql, new Object[]{userId}, projectRowMapper);
+
+            if (projects.isEmpty()) {
+                System.out.println("No projects found for member user ID: " + userId);
+            }
+
+            return projects;
+        }
 
 
+        public ProjectModel update(ProjectModel existingProject) {
+            String sql = "UPDATE projects SET title = ?, description = ?, status = ?, updated_at = ?, start_date = ?, end_date = ? WHERE id = ?";
+
+            jdbcTemplate.update(sql,
+                    existingProject.getTitle(),
+                    existingProject.getDescription(),
+                    existingProject.getStatus() != null ? existingProject.getStatus().toString() : null,
+                    new Timestamp(existingProject.getUpdatedAt().getTime()),
+                    new java.sql.Date(existingProject.getStartDate().getTime()),
+                    new java.sql.Date(existingProject.getEndDate().getTime()),
+                    existingProject.getId()
+            );
+
+            return existingProject;
+        }
     }

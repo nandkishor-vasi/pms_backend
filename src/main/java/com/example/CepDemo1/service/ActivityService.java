@@ -43,11 +43,7 @@ public class ActivityService {
 
     public ActivityModel updateActivity(Long id, ActivityModel updatedActivity) {
         ActivityModel existing = getActivityById(id);
-
-        existing.setDetail(updatedActivity.getDetail());
-        existing.setTimestamp(updatedActivity.getTimestamp());
-        existing.setProject(updatedActivity.getProject());
-        existing.setHandledBy(updatedActivity.getHandledBy());
+        existing.setAction(updatedActivity.getAction());
 
         return activityRepo.save(existing);
     }
@@ -64,4 +60,11 @@ public class ActivityService {
         return activityRepo.findByAdminId(adminId);
     }
 
+    public List<ActivityModel> getActivitiesWithMemberAndProjectDetails(Long memberId) {
+        return activityRepo.findActivitiesForMember(memberId);
+    }
+
+    public List<ActivityModel> getActivitiesByProjectId(Long projectId) {
+        return activityRepo.findByProjectId(projectId);
+    }
 }

@@ -25,6 +25,16 @@ public class ActivityController {
         return activityService.getActivitiesByAdminId(adminId);
     }
 
+    @GetMapping("/member/{memberId}")
+    public List<ActivityModel> getActivitiesWithMemberAndProjectDetails(@PathVariable Long memberId) {
+        return activityService.getActivitiesWithMemberAndProjectDetails(memberId);
+    }
+
+    @GetMapping("/project/{projectId}")
+    public List<ActivityModel> getActivitiesByProjectId(@PathVariable Long projectId) {
+        return activityService.getActivitiesByProjectId(projectId);
+    }
+
     @PostMapping
     public ActivityModel createActivity(@RequestBody ActivityModel activity) {
         return activityService.createActivity(activity);
